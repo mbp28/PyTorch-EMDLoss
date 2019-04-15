@@ -165,7 +165,7 @@ __global__ void approx_match_kernel(
 					// overflow issue?
 					// ******************************
 					ratioR[l] = consumption * remainR[l];
-					remainR[l] = fmax(0.0, remainR[l] - sumr);
+					remainR[l] = fmaxf(0.0, remainR[l] - sumr);
 				}
 			}
 			__syncthreads();
