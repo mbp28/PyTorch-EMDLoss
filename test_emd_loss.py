@@ -22,3 +22,9 @@ print(loss)
 loss.backward()
 print(p1.grad)
 print(p2.grad)
+
+# too big to run
+a = torch.randn(1, 10000, 3).cuda()
+b = torch.randn(1, 10000, 3).cuda()
+cost = dist(a, b)
+print('Success')
