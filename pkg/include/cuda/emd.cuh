@@ -139,23 +139,34 @@ __global__ void approx_match_kernel(
 						{
 							if (l < m)
 							{
-								v += (xyz2[i*m*d+l*d+z] - buf[l*(d+1)+z]) * 
-									(xyz2[i*m*d+l*d+z] - buf[l*(d+1)+z]);
+								// v += (xyz2[i*m*d+l*d+z] - buf[l*(d+1)+z]) * 
+								//	(xyz2[i*m*d+l*d+z] - buf[l*(d+1)+z]);
+								v += (xyz2[i*m*d+l*d+z] - buf[k*(d+1)+z]) * 
+									(xyz2[i*m*d+l*d+z] - buf[k*(d+1)+z]);
 							}
 							else
 							{
-								v += buf[l*(d+1)+z] * buf[l*(d+1)+z];
+								// v += buf[l*(d+1)+z] * buf[l*(d+1)+z];
+								v += buf[k*(d+1)+z] * buf[k*(d+1)+z];
 							}
 						}
 						v *= level;
 						sumr += exp(v)*buf[k*(d+1)+d];
+						// printf("exp %.3e \n", exp(v)*buf[k*(d+1)+d]);
+						// printf("sumr %.3e \n", sumr);
+						// sumr += 0.1;
 					}
 					__syncthreads();
 				}
-
+				// printf("Printing sumr \n");
+				// printf("%.3e \n", sumr);
 				if (l < m)
 				{
 					sumr *= remainR[l];
+					// printf("print early sumr %.3e \n", sumr);
+					// sumr = 12.0 + sumr;
+					// printf("printing again \n");
+					// printf("sumr %.3e \n", sumr);
 					T consumption = fmin(remainR[l] / (sumr + 1e-9), 1.0);
 					// ******************************
 					// SOURCE OF THE ISSUE: sumr
@@ -165,7 +176,12 @@ __global__ void approx_match_kernel(
 					// overflow issue?
 					// ******************************
 					ratioR[l] = consumption * remainR[l];
-					remainR[l] = fmaxf(0.0, remainR[l] - sumr);
+					// printf("consumption %.3e \n", consumption * remainR[l]);
+					// ratioR[l] = 5.0;
+					 remainR[l] = fmaxf(0.0, remainR[l] - sumr);
+					// printf("fmaxf %.3e \n", fmaxf(0.0, remainR[l] - sumr));
+					// remainR[l] = 13.0;
+					// printf("Reach here \n");
 				}
 			}
 			__syncthreads();
