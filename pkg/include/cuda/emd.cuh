@@ -7,7 +7,7 @@
 
 template <typename T>
 __global__ void approx_match_kernel(
-	const int64_t b, const int64_t n, const int64_t m, const int64_t d, 
+	const int64_t b, const int64_t n, const int64_t m, const int64_t d,
 	const T * __restrict__ xyz1,
 	const T * __restrict__ xyz2,
 	T * __restrict__ match,
@@ -19,7 +19,7 @@ __global__ void approx_match_kernel(
 	T * remainR = temp + blockIdx.x * (n + m) * 2 + n; // Start of set 2
 	T * ratioL = temp + blockIdx.x * (n + m) * 2 + n + m; // Start of set 1
 	T * ratioR = temp + blockIdx.x * (n + m) * 2 + n + m + n; // Start of set 2
-	
+
 	// Ratio of two point sets
 	T multiL;
 	T multiR;
@@ -43,12 +43,12 @@ __global__ void approx_match_kernel(
 	for (int64_t i = blockIdx.x; i < b; i += gridDim.x)
 	{
 		// Initialize match values
-		for (int64_t j = threadIdx.x; j < n*m; j += blockDim.x) 
+		for (int64_t j = threadIdx.x; j < n*m; j += blockDim.x)
 		{
 			match[i*n*m+j] = 0;
 		}
-		for (int64_t j = threadIdx.x; j < n; j += blockDim.x) 
-		{ 
+		for (int64_t j = threadIdx.x; j < n; j += blockDim.x)
+		{
 			remainL[j] = multiL;
 		}
 		for (int64_t j = threadIdx.x; j < m; j += blockDim.x)
@@ -78,13 +78,13 @@ __global__ void approx_match_kernel(
 					// End of the block or m, whichever comes first
 					int64_t lend = min(m, l0 + BLOCK_SIZE) - l0;
 
-					// Put points from the second set into the shared buffer 
+					// Put points from the second set into the shared buffer
 					for (int64_t l = threadIdx.x; l < lend; l += blockDim.x)
 					{
 						for(int64_t z = 0; z < d; z++)
 						{
 							buf[l*(d+1)+z] = xyz2[i*m*d+l0*d+l*d+z];;
-							
+
 						}
 						buf[l*(d+1)+d] = remainR[l0+l];
 					}
@@ -97,7 +97,7 @@ __global__ void approx_match_kernel(
 						{
 							if (k < n)
 							{
-								v += (buf[l*(d+1)+z] - xyz1[i*n*d+k*d+z]) * 
+								v += (buf[l*(d+1)+z] - xyz1[i*n*d+k*d+z]) *
 									(buf[l*(d+1)+z] - xyz1[i*n*d+k*d+z]);
 							}
 							else
@@ -139,7 +139,7 @@ __global__ void approx_match_kernel(
 						{
 							if (l < m)
 							{
-								v += (xyz2[i*m*d+l*d+z] - buf[l*(d+1)+z]) * 
+								v += (xyz2[i*m*d+l*d+z] - buf[l*(d+1)+z]) *
 									(xyz2[i*m*d+l*d+z] - buf[l*(d+1)+z]);
 							}
 							else
@@ -161,7 +161,7 @@ __global__ void approx_match_kernel(
 					// SOURCE OF THE ISSUE: sumr
 					// Any variable that is a function of sumr causes an error
 					// Specifically the assignments below
-					// It's an issue only with large m and n. Maybe it's a 
+					// It's an issue only with large m and n. Maybe it's a
 					// overflow issue?
 					// ******************************
 					ratioR[l] = consumption * remainR[l];
@@ -184,7 +184,7 @@ __global__ void approx_match_kernel(
 						for(int64_t z = 0; z < d; z++)
 						{
 							buf[l*(d+1)+z] = xyz2[i*m*d+l0*d+l*d+z];;
-							
+
 						}
 						buf[l*(d+1)+d] = ratioR[l0+l];
 					}
@@ -227,17 +227,17 @@ __global__ void approx_match_kernel(
 }
 
 void approx_match(
-	const int64_t b, const int64_t n, 
+	const int64_t b, const int64_t n,
 	const int64_t m, const int64_t d,
 	const at::Tensor xyz1,
 	const at::Tensor xyz2,
-	at::Tensor match, 
+	at::Tensor match,
 	at::Tensor temp)
 {
 	AT_DISPATCH_FLOATING_TYPES(match.type(), "approx_match_kernel", ([&] {
 		approx_match_kernel
 			<<<32, 512, BLOCK_SIZE*(d+1)*sizeof(scalar_t)>>>(
-			b, n, m, d, 
+			b, n, m, d,
 			xyz1.data<scalar_t>(),
 			xyz2.data<scalar_t>(),
 			match.data<scalar_t>(),
@@ -251,7 +251,7 @@ void approx_match(
 
 template <typename T>
 __global__ void match_cost_kernel(
-	const int64_t b, const int64_t n, const int64_t m, const int64_t d, 
+	const int64_t b, const int64_t n, const int64_t m, const int64_t d,
 	const T * __restrict__ xyz1,
 	const T * __restrict__ xyz2,
 	const T * __restrict__ match,
@@ -271,7 +271,7 @@ __global__ void match_cost_kernel(
 			for (int64_t l0 = 0; l0 < m; l0 += BLOCK_SIZE)
 			{
 				int64_t lend = min(m, l0 + BLOCK_SIZE) - l0;
-				for (int64_t l = threadIdx.x; l < lend * d; l += blockDim.x) 
+				for (int64_t l = threadIdx.x; l < lend * d; l += blockDim.x)
 				{
 					buf[512+l]=xyz2[i*m*d+l0*d+l];
 				}
@@ -284,7 +284,7 @@ __global__ void match_cost_kernel(
 						T v = 0;
 						for (int64_t z = 0; z < d; z++)
 						{
-							v += (buf[512+l*d+z] - xyz1[i*n*d+k*d+z]) * 
+							v += (buf[512+l*d+z] - xyz1[i*n*d+k*d+z]) *
 								(buf[512+l*d+z] - xyz1[i*n*d+k*d+z]);
 						}
 						subsum += sqrtf(v)*match[i*n*m+(l0+l)*n+k];
@@ -318,7 +318,7 @@ void match_cost(
 	AT_DISPATCH_FLOATING_TYPES(xyz1.type(), "match_cost_kernel", ([&] {
 		unsigned shared_mem_size = (512+BLOCK_SIZE*d)*sizeof(scalar_t);
 		match_cost_kernel<<<32, 512, shared_mem_size>>>(
-			b, n, m, d, 
+			b, n, m, d,
 			xyz1.data<scalar_t>(),
 			xyz2.data<scalar_t>(),
 			match.data<scalar_t>(),
@@ -331,8 +331,8 @@ void match_cost(
 
 template <typename T>
 __global__ void match_cost_grad2_kernel(
-	const int64_t b, const int64_t n, 
-	const int64_t m, const int64_t d, 
+	const int64_t b, const int64_t n,
+	const int64_t m, const int64_t d,
 	const T * __restrict__ xyz1,
 	const T * __restrict__ xyz2,
 	const T * __restrict__ match,
@@ -353,7 +353,7 @@ __global__ void match_cost_grad2_kernel(
 				T v = 0;
 				for (int64_t z = 0; z < d; z++)
 				{
-					v += (xyz2[(i*m+k)*d+z] - xyz1[(i*n+j)*d+z]) * 
+					v += (xyz2[(i*m+k)*d+z] - xyz1[(i*n+j)*d+z]) *
 						(xyz2[(i*m+k)*d+z] - xyz1[(i*n+j)*d+z]);
 				}
 				T w = match[i*n*m+k*n+j] * rsqrtf(fmaxf(v, 1e-20f));
@@ -391,8 +391,8 @@ __global__ void match_cost_grad2_kernel(
 
 template <typename T>
 __global__ void match_cost_grad1_kernel(
-	const int64_t b, const int64_t n, 
-	const int64_t m, const int64_t d, 
+	const int64_t b, const int64_t n,
+	const int64_t m, const int64_t d,
 	const T * __restrict__ xyz1,
 	const T * __restrict__ xyz2,
 	const T * __restrict__ match,
@@ -407,24 +407,24 @@ __global__ void match_cost_grad1_kernel(
 				T v = 0;
 				for (int64_t z = 0; z < d; z++)
 				{
-					v += (xyz1[i*n*d+l*d+z] - xyz2[i*m*d+k*d+z]) * 
+					v += (xyz1[i*n*d+l*d+z] - xyz2[i*m*d+k*d+z]) *
 						(xyz1[i*n*d+l*d+z] - xyz2[i*m*d+k*d+z]);
 				}
 				T w = match[i*n*m+k*n+l] * rsqrtf(fmaxf(v, 1e-20f));
 
 				for (int64_t z = 0; z < d; z++)
 				{
-					grad1[i*n*d+l*d+z] += 
+					grad1[i*n*d+l*d+z] +=
 						(xyz1[i*n*d+l*d+z] - xyz2[i*m*d+k*d+z]) * w;
-				}				
+				}
 			}
 		}
 	}
 }
 
 void match_cost_grad(
-	const int64_t b, const int64_t n, 
-	const int64_t m, const int64_t d, 
+	const int64_t b, const int64_t n,
+	const int64_t m, const int64_t d,
 	const at::Tensor xyz1,
 	const at::Tensor xyz2,
 	const at::Tensor match,
@@ -433,7 +433,7 @@ void match_cost_grad(
 {
 	AT_DISPATCH_FLOATING_TYPES(xyz1.type(), "match_cost_grad1_kernel", ([&] {
 		match_cost_grad1_kernel<<<32,512>>>(
-			b, n, m, d, 
+			b, n, m, d,
 			xyz1.data<scalar_t>(),
 			xyz2.data<scalar_t>(),
 			match.data<scalar_t>(),
@@ -443,7 +443,7 @@ void match_cost_grad(
 
 	AT_DISPATCH_FLOATING_TYPES(xyz1.type(), "match_cost_grad2_kernel", ([&] {
 		match_cost_grad2_kernel<<<dim3(32,32),512,(512*d)*sizeof(scalar_t)>>>(
-			b, n, m, d, 
+			b, n, m, d,
 			xyz1.data<scalar_t>(),
 			xyz2.data<scalar_t>(),
 			match.data<scalar_t>(),
