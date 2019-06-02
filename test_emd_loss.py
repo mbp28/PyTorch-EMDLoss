@@ -26,5 +26,8 @@ print('Check', dist(p1, p1), dist(p2,p2))
 # too big to run
 a = torch.randn(1, 30000, 3).cuda()
 b = torch.randn(1, 30000, 3).cuda()
+s = time.time()
 cost = dist(a, b)
+emd_time = time.time() - s
+print('Time for large', emd_time)
 print('Success')
