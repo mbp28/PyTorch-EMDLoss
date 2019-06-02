@@ -2,6 +2,7 @@ import torch
 import time
 import cv2
 import numpy as np
+import scipy
 from pdb import set_trace
 from emd import EMDLoss as cuda_emd
 from scipy.stats import wasserstein_distance as scipy_emd #scipy
@@ -53,7 +54,7 @@ pts2_cuda = torch.from_numpy(pts2).cuda().float().reshape(1, n2, dim)
 pts1_cuda.requires_grad = True
 pts2_cuda.requires_grad = True
 cuda_loss = cuda_emd()(pts1_cuda, pts2_cuda)
-print("CUDA EMD {:.4f}".format(cuda_loss))
+print("CUDA EMD {:.4f}".format(cuda_loss.item()))
 
 
 # dist =  EMDLoss()
