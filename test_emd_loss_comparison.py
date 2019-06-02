@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import scipy
 from pdb import set_trace
-#from emd import EMDLoss as cuda_emd
+from emd import EMDLoss as cuda_emd
 from scipy.stats import wasserstein_distance as scipy_emd #scipy
 from pyemd import emd as py_emd #github python version
 from cv2 import EMD as cv_emd #openCV
@@ -56,55 +56,7 @@ def main(n1, n2, dim, seed):
     cuda_loss = cuda_emd()(pts1_cuda, pts2_cuda)
     print("CUDA EMD {:.4f}".format(cuda_loss.item()))
 
-
-    # dist =  EMDLoss()
-    # torch.manual_seed(0)
-    # p1 = torch.rand(1,5,1).cuda().float()
-    # p2 = torch.rand(1,5,1).cuda().float()
-    # # p1 = torch.rand(1,5,1).cuda().float()
-    # # p2 = torch.rand(1,5,1).cuda().float()
-    # p1.requires_grad = True
-    # p2.requires_grad = True
-    # print('check')
-    # s = time.time()
-    # cost = dist(p1, p2)
-    # emd_time = time.time() - s
-    #
-    # print('Time: ', emd_time)
-    # print(cost)
-    #
-    # # wd
-    # a1 = p1.cpu().detach().numpy().reshape(5)
-    # a2 = p2.cpu().detach().numpy().reshape(5)
-    # print(wd(a1,a2))
-    # # pyemd
-    # w1 = np.ones((5,5))
-    # a1 = p1.cpu().detach().numpy().reshape(5).astype('float64')
-    # a2 = p2.cpu().detach().numpy().reshape(5).astype('float64')
-    # print(emd(a1,a2,w1))
-    # # cv2
-    # a1 = p1.cpu().detach().numpy().reshape(5,1)
-    # a2 = p2.cpu().detach().numpy().reshape(5,1)
-    # sig1 = img_to_sig(a1)
-    # sig2 = img_to_sig(a2)
-    # dist, _, flow = cv2.EMD(sig1, sig2, cv2.DIST_L2)
-    # print(dist)
-
-    set_trace()
-    # loss = torch.sum(cost)
-    # print(loss)
-    # loss.backward()
-    # print(p1.grad)
-    # print(p2.grad)
-    # print('Check', dist(p1, p1), dist(p2,p2))
-    # # too big to run
-    # s = time.time()
-    # a = torch.randn(4, 30000, 3).cuda()
-    # b = torch.randn(4, 30000, 3).cuda()
-    # cost = dist(a, b)
-    # emd_time2 = time.time() - s
-    # print(emd_time2)
-    # print('Success')
+    # set_trace()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
