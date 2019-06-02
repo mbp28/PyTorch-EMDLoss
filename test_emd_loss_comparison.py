@@ -19,7 +19,7 @@ def main(n1, n2, dim, seed):
     # Scipy EMD
     if dim == 1:
         # scipy only works on univariate data
-        scipy_loss = scipy_emd(pts1.squeeze(), pts2.squeeze())
+        scipy_loss = scipy_emd(pts1.squeeze(1), pts2.squeeze(1))
         print("Scipy EMD {:.4f}".format(scipy_loss))
 
     # PyEMD
