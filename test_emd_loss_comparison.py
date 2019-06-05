@@ -54,7 +54,17 @@ def main(n1, n2, dim, seed):
     pts1_cuda.requires_grad = True
     pts2_cuda.requires_grad = True
     cuda_loss = cuda_emd()(pts1_cuda, pts2_cuda)
-    print("CUDA EMD {:.4f}".format(cuda_loss.item()))
+    print("CUDA EMD (raw dim) {:.4f}".format(cuda_loss.item()))
+
+    if dim <= 6:
+        pts1_cuda = torch.zeros(1, n1, 6).cuda().float()
+        pts1_cuda[:, :, :dim] =  torch.from_numpy(pts1).cuda().float().reshape(1, n1, dim)
+        pts2_cuda = torch.zeros(1, n2, 6).cuda().float()
+        pts2_cuda[:, :, :dim] =  torch.from_numpy(pts2).cuda().float().reshape(1, n2, dim)
+        pts1_cuda.requires_grad = True
+        pts2_cuda.requires_grad = True
+        cuda_loss = cuda_emd()(pts1_cuda, pts2_cuda)
+        print("CUDA EMD (six adjusted) {:.4f}".format(cuda_loss.item()))
 
     # set_trace()
 
