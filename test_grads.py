@@ -61,8 +61,8 @@ def main(n1, n2, dim, seed):
         print("CUDA EMD (six adjusted) {:.4f}".format(cuda_loss.item()))
         # and gradients
         cuda_loss.backward()
-        pts1_grad_np = pts1_cuda.grad.cpu().numpy()
-        pts2_grad_np = pts2_cuda.grad.cpu().numpy()
+        pts1_grad_np = pts1_cuda.grad.cpu().numpy()[:, :, :dim]
+        pts2_grad_np = pts2_cuda.grad.cpu().numpy()[:, :, :dim]
         print("CUDA EMD Grad t1 (mean) {:.4f}".format(pts1_grad_np.mean()))
         print("CUDA EMD Grad t1 (std) {:.4f}".format(pts1_grad_np.std()))
         print("CUDA EMD Grad t2 (mean) {:.4f}".format(pts2_grad_np.mean()))
