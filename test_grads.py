@@ -39,16 +39,16 @@ def main(n1, n2, dim, seed):
     print("CUDA EMD (raw dim) {:.4f}".format(cuda_loss.item()))
     # and gradients
     cuda_loss.backward()
-    pts1_grad_np = pts1_cuda.grad.numpy()
-    pts2_grad_np = pts2_cuda.grad.numpy()
+    pts1_grad_np = pts1_cuda.grad.cpu().numpy()
+    pts2_grad_np = pts2_cuda.grad.cpu().numpy()
     print("CUDA EMD Grad t1 (mean) {:.4f}".format(pts1_grad_np.mean()))
     print("CUDA EMD Grad t1 (std) {:.4f}".format(pts1_grad_np.std()))
     print("CUDA EMD Grad t2 (mean) {:.4f}".format(pts2_grad_np.mean()))
     print("CUDA EMD Grad t2 (std) {:.4f}".format(pts2_grad_np.std()))
-    print("CUDA EMD Grad t1 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, \
-        {4:.4f}".format(*pts1_grad_np[grad_ix_n, grad_ix_dim]))
-    print("CUDA EMD Grad t2 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, \
-            {4:.4f}".format(*pts2_grad_np[grad_ix_n, grad_ix_dim]))
+    print("CUDA EMD Grad t1 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, {4:.4f}".format(
+        *pts1_grad_np[0, grad_ix_n, grad_ix_dim]))
+    print("CUDA EMD Grad t2 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, {4:.4f}".format(
+        *pts2_grad_np[0, grad_ix_n, grad_ix_dim]))
 
     if dim <= 6:
         pts1_cuda = torch.zeros(1, n1, 6).cuda().float()
@@ -61,16 +61,17 @@ def main(n1, n2, dim, seed):
         print("CUDA EMD (six adjusted) {:.4f}".format(cuda_loss.item()))
         # and gradients
         cuda_loss.backward()
-        pts1_grad_np = pts1_cuda.grad.numpy()
-        pts2_grad_np = pts2_cuda.grad.numpy()
+        pts1_grad_np = pts1_cuda.grad.cpu().numpy()
+        pts2_grad_np = pts2_cuda.grad.cpu().numpy()
         print("CUDA EMD Grad t1 (mean) {:.4f}".format(pts1_grad_np.mean()))
         print("CUDA EMD Grad t1 (std) {:.4f}".format(pts1_grad_np.std()))
         print("CUDA EMD Grad t2 (mean) {:.4f}".format(pts2_grad_np.mean()))
         print("CUDA EMD Grad t2 (std) {:.4f}".format(pts2_grad_np.std()))
-        print("CUDA EMD Grad t1 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, \
-            {4:.4f}".format(*pts1_grad_np[grad_ix_n, grad_ix_dim]))
-        print("CUDA EMD Grad t2 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, \
-                {4:.4f}".format(*pts2_grad_np[grad_ix_n, grad_ix_dim]))
+        print("CUDA EMD Grad t1 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, {4:.4f}".format(
+            *pts1_grad_np[0, grad_ix_n, grad_ix_dim]))
+        print("CUDA EMD Grad t2 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, {4:.4f}".format(
+            *pts2_grad_np[0, grad_ix_n, grad_ix_dim]))
+
     # set_trace()
 
 if __name__ == '__main__':
