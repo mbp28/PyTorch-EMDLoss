@@ -6,6 +6,7 @@ import numpy as np
 from pdb import set_trace
 from emd import EMDLoss as cuda_emd
 from cv2 import EMD as cv_emd #openCV
+import my_autograd
 
 def main(n1, n2, dim, seed):
     # Generate data with numpy
@@ -36,7 +37,7 @@ def main(n1, n2, dim, seed):
     pts2_cuda = torch.from_numpy(pts2).cuda().float().reshape(1, n2, dim)
     pts1_cuda.requires_grad = True
     pts2_cuda.requires_grad = True
-    cuda_loss = cuda_emd()(pts1_cuda, pts2_cuda) 
+    cuda_loss = cuda_emd()(pts1_cuda, pts2_cuda)
     print("CUDA EMD (raw dim) {:.4f}".format(cuda_loss.item()))
     cuda_loss.backward()
     pts1_grad_np = pts1_cuda.grad.cpu().numpy()
@@ -69,6 +70,24 @@ def main(n1, n2, dim, seed):
     pts1_cuda.requires_grad = True
     pts2_cuda.requires_grad = True
     cuda_loss = cuda_emd()(pts1_cuda /n1 , pts2_cuda/ n1)
+    print("CUDA EMD (raw dim) {:.4f}".format(cuda_loss.item()))
+    cuda_loss.backward()
+    pts1_grad_np = pts1_cuda.grad.cpu().numpy()
+    pts2_grad_np = pts2_cuda.grad.cpu().numpy()
+    print("CUDA EMD Grad t1 (mean) {:.4f}".format(pts1_grad_np.mean()))
+    print("CUDA EMD Grad t1 (std) {:.4f}".format(pts1_grad_np.std()))
+    print("CUDA EMD Grad t1 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, {4:.4f}".format(
+        *pts1_grad_np[0, grad_ix_n, grad_ix_dim]))
+
+    # CUDA_EMD (Do it again but scale the inputs)
+    print('Computations with custom scaling inputs')
+    pts1_cuda = torch.from_numpy(pts1).cuda().float().reshape(1, n1, dim)
+    pts2_cuda = torch.from_numpy(pts2).cuda().float().reshape(1, n2, dim)
+    pts1_cuda.requires_grad = True
+    pts2_cuda.requires_grad = True
+    t1 = CustomGradientScale(pts1_cuda, 1/n1)
+    t2 = CustomGradientScale(pts2_cuda, 1/n2)
+    cuda_loss = cuda_emd()(t1 , t2)
     print("CUDA EMD (raw dim) {:.4f}".format(cuda_loss.item()))
     cuda_loss.backward()
     pts1_grad_np = pts1_cuda.grad.cpu().numpy()
