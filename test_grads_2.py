@@ -85,16 +85,16 @@ def main(n1, n2, dim, seed):
     pts2_cuda = torch.from_numpy(pts2).cuda().float().reshape(1, n2, dim)
     pts1_cuda.requires_grad = True
     pts2_cuda.requires_grad = True
-    t1 = CustomGradientScale(pts1_cuda, 1/n1)
-    t2 = CustomGradientScale(pts2_cuda, 1/n2)
+    t1 = my_autograd.CustomGradientScale.apply(pts1_cuda, 1/n1)
+    t2 = my_autograd.CustomGradientScale.apply(pts2_cuda, 1/n2)
     cuda_loss = cuda_emd()(t1 , t2)
     print("CUDA EMD (raw dim) {:.4f}".format(cuda_loss.item()))
     cuda_loss.backward()
     pts1_grad_np = pts1_cuda.grad.cpu().numpy()
     pts2_grad_np = pts2_cuda.grad.cpu().numpy()
-    print("CUDA EMD Grad t1 (mean) {:.4f}".format(pts1_grad_np.mean()))
-    print("CUDA EMD Grad t1 (std) {:.4f}".format(pts1_grad_np.std()))
-    print("CUDA EMD Grad t1 (random) {0:.4f}, {1:.4f}, {2:.4f}, {3:.4f}, {4:.4f}".format(
+    print("CUDA EMD Grad t1 (mean) {:.6f}".format(pts1_grad_np.mean()))
+    print("CUDA EMD Grad t1 (std) {:.6f}".format(pts1_grad_np.std()))
+    print("CUDA EMD Grad t1 (random) {0:.6f}, {1:.6f}, {2:.6f}, {3:.6f}, {4:.6f}".format(
         *pts1_grad_np[0, grad_ix_n, grad_ix_dim]))
 
     # set_trace()
