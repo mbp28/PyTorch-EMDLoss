@@ -56,5 +56,7 @@ def run_match(t1, t2, scale):
 for i in range(-10, 10):
     scale = 10**i
     run_match(pts1_cuda, pts2_cuda, scale)
-    
+
 set_trace()
+# Problem could be that dimensions are differently weighted?
+# Can check with numpy script making one dimension high variance, others small. 
