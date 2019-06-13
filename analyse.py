@@ -7,16 +7,16 @@ from pdb import set_trace
 from emd import EMDLoss as cuda_emd
 from _emd_ext._emd import emd_forward, emd_backward
 
-output = torch.load("/data/out.pt").cuda()
-target = torch.load("/data/targ.pt").cuda()
+output = torch.load('data/out.pt').cuda()
+target = torch.load('data/targ.pt').cuda()
 pts1_cuda = output[0,:,:].reshape(1, output.size(1), output.size(2))
-pts1_cuda = target[0,:,:].reshape(1, target.size(1), target.size(2))
+pts2_cuda = target[0,:,:].reshape(1, target.size(1), target.size(2))
 
 for i in range(0, output.size(0)):
-    print("min", output[i].min(0), target.min(0))
-    print("mean", output[i].mean(0), target.mean(0))
-    print("std", output[i].std(0), target.std(0))
-    print("max", output[i].max(0), target.max(0))
+    print("min", output[i].min(0), target[i].min(0))
+    print("mean", output[i].mean(0), target[i].mean(0))
+    print("std", output[i].std(0), target[i].std(0))
+    print("max", output[i].max(0), target[i].max(0))
 
     # CUDA_EMD
 def run_match(t1, t2, scale):
@@ -24,7 +24,7 @@ def run_match(t1, t2, scale):
     print('*** Computing cost and match for point clouds with {} points - scaling inputs with {}'.format(n, scale))
     cost, match = emd_forward(t1 * scale, t2 * scale)
     match_np = match.cpu().numpy()
-    print('Cost {:.4f}, per point {:.4f}'.format(cost.item() * n, cost.item()))
+    print('Cost {:.4f}, per point {:.4f}'.format(cost.item() * (1/scale), cost.item() * (1/scale) / n))
     print('Statistics for match')
     numel = np.size(match_np)
     zero_numel = (match_np == 0).sum()
@@ -53,8 +53,8 @@ def run_match(t1, t2, scale):
     print('Somewhat matches: \t Total {1:.3g}/{0:.3g} \t [{2:.2%}]'.format(
         n, n_some_match, n_some_match/n))
 
-for i in range(-10, 10):
-    scale = 10**i
-    run_match(pts1_cuda, pts2_cuda, scale)
+# for i in range(-10, 10):
+#    scale = 10**i
+#    run_match(pts1_cuda, pts2_cuda, scale)
     
 set_trace()
