@@ -60,7 +60,7 @@ __global__ void approx_match_kernel(
 		}
 		__syncthreads();
 
-
+		// What is this loop? Does this control approximtion quality?
 		for (int64_t j = 7; j >= -2; j--)
 		{
 			T level = -pow(4.0, j);
