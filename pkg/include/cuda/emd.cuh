@@ -5,6 +5,9 @@
 
 #define BLOCK_SIZE 512
 
+// b is batchsize, n is n1, m is n2, d is dim, xyz1 is point cloud 1, xyz2 is
+// point cloud 2, match is where the matches are written to, temp is some temporary
+// memory that this implementation apparently requires.
 template <typename T>
 __global__ void approx_match_kernel(
 	const int64_t b, const int64_t n, const int64_t m, const int64_t d,
