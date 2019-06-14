@@ -56,5 +56,16 @@ def run_match(t1, t2, scale):
 # for i in range(-10, 10):
 #    scale = 10**i
 #    run_match(pts1_cuda, pts2_cuda, scale)
-    
+print('Output loop')
+for i in range(output.shape[0]):
+    run_match(output[i].reshape(1, output.shape[1], output.shape[2]), output[i].reshape(1, output.shape[1], output.shape[2]), 1)
+
+print('Target loop')
+for i in range(output.shape[0]):
+    run_match(target[i].reshape(1, output.shape[1], output.shape[2]), target[i].reshape(1, output.shape[1], output.shape[2]), 1)
+
+print('Pairwise loop')
+for i in range(output.shape[0]):
+    run_match(output[i].reshape(1, output.shape[1], output.shape[2]), target[i].reshape(1, output.shape[1], output.shape[2]), 1)
+
 set_trace()
