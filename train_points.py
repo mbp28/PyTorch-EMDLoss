@@ -1,8 +1,7 @@
 import torch
+import torch.nn as nn
 import time
 import numpy as np
-import cv2
-from cv2 import EMD as cv_emd #openCV
 from pdb import set_trace
 from emd import EMDLoss as cuda_emd
 from _emd_ext._emd import emd_forward, emd_backward
@@ -52,26 +51,27 @@ class PointLayer(nn.Module):
 
 def ex1_random_clouds():
     n = 100
-    x = torch.randn(n, 3)
+    x = torch.randn(n, 3).view(1, n, 3)
     L = torch.Tensor([[1, 0, 0], [0.5, 1, 0], [0.5, 0.5, 0.5]]) # some var decomposition
-    y = torch.randn(n, 3).mm(L.t()) + torch.Tensor([1, 2, 3]) # some mean
-    run_match(x.cuda(), y.cuda())
+    y = (torch.randn(n, 3).mm(L.t()) + torch.Tensor([1,2, 3])).view(1,n,3) # some mean
+    run_match(x.cuda(), y.cuda(), 1)
     # set up training
     model = PointLayer(x)
-    model.cuda()
-    y.cuda()
-    num_iter = 10000
-    optimiser = torch.optim.SGD(model.parameters(), lr=0.01)
+    model = model.cuda()
+    y = y.cuda()
+    num_iter = 2000
+    optimiser = torch.optim.SGD(model.parameters(), lr=0.03)
     # training loop
     for i in range(num_iter):
+        optimiser.zero_grad() 
         x = model() # just return the current points
-        x.register_hook(lambda grad: (1/n) * grad)
+        #x.register_hook(lambda grad: (1/n) * grad)
         loss = cuda_emd()(x, y)
         loss.backward()
-        optimizer.step()
+        optimiser.step()
         if ((i + 1) % 100) == 0:
-            print("CUDA EMD {:.4f}".format(cuda_loss.item()))
-    set_trace()
+            print("CUDA EMD {:.4f} [{:.4f}]".format(loss.item(), loss.item() / n))
+    run_match(model.points, y.cuda(), 1)
 
 def ex2_data():
     output = torch.load('data/out.pt').cuda()
