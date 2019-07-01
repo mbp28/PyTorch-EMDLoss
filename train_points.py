@@ -50,7 +50,7 @@ class PointLayer(nn.Module):
         return self.points
 
 def ex1_random_clouds():
-    n = 5000
+    n = 100
     x = torch.randn(n, 3).view(1, n, 3)
     L = torch.Tensor([[1, 0, 0], [0.5, 1, 0], [0.5, 0.5, 0.5]]) # some var decomposition
     y = (torch.randn(n, 3).mm(L.t()) + torch.Tensor([1,2, 3])).view(1,n,3) # some mean
@@ -60,7 +60,7 @@ def ex1_random_clouds():
     model = model.cuda()
     y = y.cuda()
     num_iter = 1000
-    optimiser = torch.optim.SGD(model.parameters(), lr=0.03)
+    optimiser = torch.optim.SGD(model.parameters(), lr=0.1)
     # training loop
     for i in range(num_iter):
         optimiser.zero_grad()
@@ -70,21 +70,28 @@ def ex1_random_clouds():
         loss.backward()
         optimiser.step()
         if (i % 10) == 0:
-            print("CUDA EMD {:.4f} [{:.4f}]".format(loss.item(), loss.item() / n))
+            print("Iteration {} [{:.0%}]	Loss {:.4f} [{:.4f}]".format(i, i/num_iter, loss.item(), loss.item() / n))
+        if ((i+1) % 99) == 0:
+            for param_group in optimiser.param_groups:
+                param_group['lr'] *= 0.5
+
     run_match(model.points, y.cuda(), 1)
+    torch.save(model.points.data.cpu(), 'trained_point.pth')
+
+
 
 def ex2_data():
     output = torch.load('data/out.pt').cuda()
     target = torch.load('data/targ.pt').cuda()
-    pts1_cuda = output[0,:,:].reshape(1, output.size(1), output.size(2))
-    pts2_cuda = target[0,:,:].reshape(1, target.size(1), target.size(2))
-    run_match(pts1_cuda, pts2_cuda, 1)
+    n = target.size(1)
+    x = output[0,:,:].reshape(1, output.size(1), output.size(2))
+    y = target[0,:,:].reshape(1, target.size(1), target.size(2))
+    run_match(x, y, 1)
     # set up training
     model = PointLayer(x)
     model = model.cuda()
-    y = pts2_cuda
     num_iter = 1000
-    optimiser = torch.optim.SGD(model.parameters(), lr=0.03)
+    optimiser = torch.optim.SGD(model.parameters(), lr=0.5)
     # training loop
     for i in range(num_iter):
         optimiser.zero_grad()
@@ -94,9 +101,15 @@ def ex2_data():
         loss.backward()
         optimiser.step()
         if (i % 10) == 0:
-            print("CUDA EMD {:.4f} [{:.4f}]".format(loss.item(), loss.item() / n))
-    run_match(model.points, y.cuda(), 1)
+            print("Iteration {} [{:.0%}]	Loss {:.4f} [{:.4f}]".format(i, i/num_iter, loss.item(), loss.item() / n))
+        if ((i+1) % 99) == 0:
+            for param_group in optimiser.param_groups:
+                param_group['lr'] *= 0.9
+                torch.save(model.points.data.cpu(), 'trained_point.pt')
 
+    run_match(model.points, y.cuda(), 1)
+    torch.save(model.points.data.cpu(), 'data/trained_points.pth')
 
 if __name__ == '__main__':
-    ex1_random_clouds()
+    # ex1_random_clouds()
+    ex2_data()
